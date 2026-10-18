@@ -54,6 +54,7 @@ class GlobeDevice:
         self._flush_unsub: CALLBACK_TYPE | None = None
         self._unsub_adv: CALLBACK_TYPE | None = None
         self._stopping = False
+        self._urgent = False
 
     # ---- listeners -------------------------------------------------------
     @callback
@@ -231,9 +232,14 @@ class GlobeDevice:
                     if val:
                         self.info[key] = val
                 continue
+            if page == 55 and fields.get("light") is not None and fields["light"] != self.state.values.get("light"):
+                self._urgent = True  # someone toggled the light / assist: show it now
+            if page == 55 and fields.get("assist_mode") != self.state.values.get("assist_mode"):
+                self._urgent = True
             changed |= self.state.update(fields)
         if changed:
-            self._schedule_publish()
+            self._schedule_publish(immediate=self._urgent)
+            self._urgent = False
 
     # ---- commands --------------------------------------------------------
     async def async_send(self, data: bytes) -> None:

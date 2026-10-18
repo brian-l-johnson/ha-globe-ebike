@@ -40,10 +40,6 @@ BINARY: tuple[GlobeBinaryDescription, ...] = (
         key="motor_lock", name="Motor lock", device_class=BinarySensorDeviceClass.LOCK,
         value_fn=lambda d: None if d.status.get("locked") is None else not d.status["locked"],
     ),
-    GlobeBinaryDescription(
-        key="light", name="Light", device_class=BinarySensorDeviceClass.LIGHT,
-        value_fn=lambda d: d.state.values.get("light"),
-    ),
 )
 
 

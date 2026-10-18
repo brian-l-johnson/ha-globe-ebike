@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant, callback
 from .const import CONF_SUPPORTED
 from .device import GlobeDevice
 
-PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
+PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR, Platform.SWITCH]
 
 type GlobeConfigEntry = ConfigEntry[GlobeDevice]
 

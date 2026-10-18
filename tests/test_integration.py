@@ -51,18 +51,55 @@ async def test_entities_from_frames(hass: HomeAssistant, enable_custom_integrati
 
     assert st("sensor.eh02_36839_battery").state == "57"
     assert float(st("battery_voltage").state) == pytest.approx(49.194)
-    assert float(st("battery_charge_current").state) == pytest.approx(2.83)
+    assert float(st("battery_current").state) == pytest.approx(2.83)
     assert st("binary_sensor.eh02_36839_charging").state == "on"
     assert st("binary_sensor.eh02_36839_motor_lock").state == "on"  # on = unlocked
     assert st("assist_level").state == "3"
+    tt = st("trip_time")
+    assert tt.attributes["unit_of_measurement"] == "h" and float(tt.state) == pytest.approx(41 / 3600, abs=1e-3)
     assert not any(e.endswith("motor_temperature") for e in states)  # unsupported → no entity
     assert set(entry.data["supported_fields"]) >= {"battery_level", "odometer", "assist_mode"}
 
     # bike goes to sleep: live values go unavailable, battery % stays
     dev._on_disconnect(None)
     await hass.async_block_till_done()
-    assert hass.states.get(st("battery_charge_current").entity_id).state == STATE_UNAVAILABLE
+    assert hass.states.get(st("battery_current").entity_id).state == STATE_UNAVAILABLE
     assert hass.states.get(st("sensor.eh02_36839_battery").entity_id).state == "57"
     assert hass.states.get(st("connected").entity_id).state == "off"
 
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_light_switch(hass: HomeAssistant, enable_custom_integrations, no_bt) -> None:
+    from unittest.mock import AsyncMock
+
+    entry = MockConfigEntry(domain=DOMAIN, unique_id=ADDR, data={"address": ADDR, "name": "EH02_36839"},
+                            title="EH02_36839")
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    dev = entry.runtime_data
+    sw = "switch.eh02_36839_light"
+    assert hass.states.get(sw).state == "unavailable"          # bike not connected yet
+    assert hass.states.get("binary_sensor.eh02_36839_light") is None  # replaced by the switch
+
+    dev.connected, dev._client = True, object()
+    dev._write_cmd = AsyncMock()
+    dev._on_data(None, P55)                                     # bike says light is on
+    await hass.async_block_till_done()
+    assert hass.states.get(sw).state == "on"                    # published immediately, no 5 s wait
+
+    await hass.services.async_call("switch", "turn_off", {"entity_id": sw}, blocking=True)
+    assert dev._write_cmd.await_args.args[1] == bytes([0x07, 0x00, 0x00])
+    assert hass.states.get(sw).state == "off"
+
+    await hass.services.async_call("switch", "turn_on", {"entity_id": sw}, blocking=True)
+    assert dev._write_cmd.await_args.args[1] == bytes([0x07, 0x01, 0x00])
+
+    dev._on_disconnect(None)                                    # bike asleep
+    await hass.async_block_till_done()
+    assert hass.states.get(sw).state == "unavailable"
+    calls = dev._write_cmd.await_count
+    await hass.services.async_call("switch", "turn_on", {"entity_id": sw}, blocking=True)
+    assert dev._write_cmd.await_count == calls                  # HA skips unavailable entities
     assert await hass.config_entries.async_unload(entry.entry_id)

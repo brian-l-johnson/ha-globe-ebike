@@ -16,7 +16,8 @@ proxy that has **active connections** enabled.
 | Charging | binary sensor |
 | Range, Odometer, Trip distance, Trip time | km internally; HA converts to miles |
 | Speed, Rider power, Assist level | live / last value |
-| Light, Motor lock | binary sensors (lock: on = unlocked) |
+| Light | **switch**: toggles the bike's headlight (bike must be awake) |
+| Motor lock | binary sensor (on = unlocked) |
 | Connected | diagnostic; shows when the bike drops off Bluetooth |
 | Error code, Assist speed limit, Wheel circumference | diagnostic |
 
@@ -37,8 +38,8 @@ supported list is remembered across restarts.
   (the bike sends ~10 frames/s), and status/charging changes publish immediately.
 - When the bike sleeps or goes out of range, live sensors go unavailable. It reconnects
   on the next advertisement, with a 30 s cooldown.
-- Read-only for now. The protocol supports assist level, light and power-off commands
-  (`GlobeDevice.async_send` + `protocol.cmd_*`); they aren't exposed yet.
+- The light is controllable. The protocol also supports assist level and power-off
+  (`GlobeDevice.async_send` + `protocol.cmd_*`); those aren't exposed.
 
 ## Debug
 ```yaml
