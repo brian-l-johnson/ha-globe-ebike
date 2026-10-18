@@ -14,7 +14,7 @@ from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_ADDRESS, CONF_NAME
 
 from .const import DOMAIN
-from .protocol import SERVICE_UUID
+from .protocol import is_globe
 
 
 class GlobeConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -51,7 +51,7 @@ class GlobeConfigFlow(ConfigFlow, domain=DOMAIN):
 
         configured = self._async_current_ids(include_ignore=False)
         for info in async_discovered_service_info(self.hass, connectable=True):
-            if SERVICE_UUID in [u.lower() for u in info.service_uuids] and info.address not in configured:
+            if is_globe(info.name, info.service_uuids) and info.address not in configured:
                 self._found[info.address] = info.name or info.address
         if not self._found:
             return self.async_abort(reason="no_devices_found")

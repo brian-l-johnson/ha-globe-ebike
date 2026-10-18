@@ -22,6 +22,17 @@ DIS_CHARS = {
     "sw_version": "00002a28-0000-1000-8000-00805f9b34fb",
 }
 
+# Globe bikes advertise only flags + appearance (0x0480 cycling) + name "EH0x_nnnnn".
+# The service UUID is in the scan response, which passive scanners never see.
+NAME_PREFIX = "EH0"
+
+
+def is_globe(name: str | None, service_uuids: list[str] | None) -> bool:
+    if SERVICE_UUID in [u.lower() for u in (service_uuids or [])]:
+        return True
+    return bool(name) and name.startswith(NAME_PREFIX) and "_" in name
+
+
 FRAME_LEN = 20
 
 OP_MTU_PAGE_MODE = 0x3C

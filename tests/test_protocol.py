@@ -82,3 +82,11 @@ def test_commands():
     assert protocol.cmd_loop_pages() == bytes([0x3E, 51, 52, 53] + [0] * 15)
     assert len(protocol.cmd_once_pages(protocol.INFO_PAGES)) == 19
     assert protocol.cmd_light(True) == bytes([7, 1, 0])
+
+
+def test_is_globe_from_passive_advert():
+    # Real advert heard by a passive scanner: no service UUID, name only.
+    assert protocol.is_globe("EH02_36839", [])
+    assert protocol.is_globe(None, [protocol.SERVICE_UUID.upper()])
+    assert not protocol.is_globe("EHome speaker", [])
+    assert not protocol.is_globe(None, [])
