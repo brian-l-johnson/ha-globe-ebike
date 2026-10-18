@@ -1,0 +1,16 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "description": "Pick the bike. Turn its display on and close the Globe app first (the bike takes one connection at a time).",
+        "data": { "address": "Bike" }
+      },
+      "confirm": { "description": "Set up {name}?" }
+    },
+    "abort": {
+      "already_configured": "This bike is already set up.",
+      "no_devices_found": "No Globe bike in range. Turn the display on, close the Globe app, and make sure a Bluetooth proxy with active connections is nearby."
+    }
+  }
+}

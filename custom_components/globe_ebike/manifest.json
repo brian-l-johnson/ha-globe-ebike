@@ -1,0 +1,19 @@
+{
+  "domain": "globe_ebike",
+  "name": "Specialized Globe e-bike",
+  "bluetooth": [
+    {
+      "service_uuid": "00010000-452d-4269-6b65-58706c6f7661",
+      "connectable": true
+    }
+  ],
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": ["bluetooth_adapters"],
+  "documentation": "https://github.com/",
+  "integration_type": "device",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/",
+  "requirements": ["bleak-retry-connector>=3.5.0"],
+  "version": "0.1.0"
+}
